@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Find Dogs Near You</title>
+
+    <!-- Link to Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    
+    <!-- Link to Leaflet JS -->
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+    <style>
+        /* General body styling */
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            height: 100vh; /* Full viewport height */
+            background-color: #DFDACF;
+            font-family: 'Helvetica', sans-serif;
+            letter-spacing: 1px;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            padding: 20px 0;
+            background-color: #F8F3E7;
+        }
+
+        nav {
+            display: flex;
+            gap: 20px;
+            padding-left: 20px;
+        }
+
+        .nav-link {
+            color: black;
+            text-decoration: none;
+            font-size: 18px;
+        }
+
+        .baydogs {
+            font-family: 'Rammetto One', sans-serif;
+            font-size: 36px;
+            color: #47689B;
+            margin: 0;
+            text-align: center;
+        }
+
+        #map {
+            flex-grow: 1; /* Map takes up all remaining space */
+            width: 100%; /* Full width of the container */
+        }
+
+        /* Input and button styling */
+        .form-container {
+            padding: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #F8F3E7;
+        }
+
+        input[type="text"] {
+            padding: 10px;
+            margin-right: 10px; 
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            width: 250px;
+        }
+
+        button {
+            background-color: #4b2c20;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <nav>
+            <a href="spotting-dogs-home.html" class="nav-link">About</a>
+            <a href="spotting-dogs-4.html" class="nav-link">Explore KBC</a>
+            <a href="category.html" class="nav-link">Category</a>
+        </nav>
+        <h1 class="baydogs">
+            <a href="../index.html" style="text-decoration: none; color: #47689B;">Baydogs</a>
+        </h1>
+    </header>
+
+    <div class="form-container">
+        <input type="text" id="address" placeholder="Enter your address">
+        <button onclick="geocodeAddress()">See Dogs Near You</button>
+    </div>
+
+    <div id="map"></div>
+
+    <script>
+        // Initialize Leaflet map
+        var map = L.map('map').setView([40.7128, -74.0060], 13); // Default location (New York)
+
+        // Add OpenStreetMap tiles
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
+
+        // Function to geocode address and show on the map
+        function geocodeAddress() {
+            var address = document.getElementById('address').value;
+
+            // Use Nominatim (OpenStreetMap geocoding service)
+            var geocodeUrl = `https://nominatim.openstreetmap.org/search?format=json&q=${address}`;
+
+            fetch(geocodeUrl)
+                .then(response => response.json())
+                .then(data => {
+                    if (data && data[0]) {
+                        var lat = data[0].lat;
+                        var lon = data[0].lon;
+
+                        // Set map view to the new coordinates
+                        map.setView(new L.LatLng(lat, lon), 13);
+
+                        // Add marker to the map
+                        L.marker([lat, lon]).addTo(map)
+                            .bindPopup('<b>You are here!</b>')
+                            .openPopup();
+
+                        // Store the user's coordinates in sessionStorage
+                        sessionStorage.setItem('userLat', lat);
+                        sessionStorage.setItem('userLon', lon);
+
+                        // Redirect to the dog entries page after a brief moment
+                        setTimeout(function() {
+                            window.location.href = 'spotting-dogs-entries.html';
+                        }, 2000);
+                    } else {
+                        alert("Could not find that address, try another one.");
+                    }
+                })
+                .catch(error => alert("Error: " + error));
+        }
+    </script>
+</body>
+</html>
